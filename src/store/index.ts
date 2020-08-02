@@ -14,14 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import AppReducer, { AppReduxState } from './reducers/app';
+import Thunk from 'redux-thunk';
+import { applyMiddleware, combineReducers, compose, createStore } from 'redux';
 
-// eslint-disable-next-line no-unused-vars
-import moment from 'moment';
-// eslint-disable-next-line no-unused-vars
-import momentTZ from 'moment-timezone';
+/**
+ * The global Redux state.
+ */
+export interface ReduxState {
+  app: AppReduxState
+}
 
-import { AppRegistry } from 'react-native';
-import App from './src/App';
-import { name as appName } from './app.json';
+const store = createStore(
+  combineReducers({
+    app: AppReducer,
+  }),
+  compose(
+    applyMiddleware(Thunk)
+  )
+);
 
-AppRegistry.registerComponent(appName, () => App);
+/**
+ * The global Redux store.
+ */
+export default store;

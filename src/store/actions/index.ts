@@ -14,14 +14,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-// eslint-disable-next-line no-unused-vars
-import moment from 'moment';
-// eslint-disable-next-line no-unused-vars
-import momentTZ from 'moment-timezone';
-
-import { AppRegistry } from 'react-native';
-import App from './src/App';
-import { name as appName } from './app.json';
-
-AppRegistry.registerComponent(appName, () => App);
+export * from './app';

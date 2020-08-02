@@ -14,43 +14,77 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React from 'react';
-
-import { SafeAreaView } from 'react-native';
-import { Appbar, DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
-import { BackButton, NativeRouter, Switch, Route } from 'react-router-native';
-
 import HomeScreen from './screens/Home';
-import Loader from './components/Loader';
+import React, { PropsWithChildren, useCallback, useEffect } from 'react';
+import ServerScreen from './screens/Server';
+import store, { ReduxState } from './store';
+import { BackHandler, SafeAreaView } from 'react-native';
+import { Appbar, DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
+import { Provider as ReduxProvider, useSelector } from 'react-redux';
+import { BackButton, NativeRouter, Switch, Route, useLocation } from 'react-router-native';
+
+interface AppProps {
+}
 
 const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    // primary: 'tomato',
-    // accent: 'yellow',
+    primary: 'black',
+    accent: 'yellow',
   },
 };
 
-const App = () => {
-  return (
-    <NativeRouter>
-      <BackButton>
-        <PaperProvider theme={theme}>
-          <SafeAreaView>
-            <Appbar.Header>
-              <Appbar.Content title="Cloud Clip" subtitle={'Subtitle'} />
-            </Appbar.Header>
+const App = (_props: PropsWithChildren<AppProps>) => {
+  const appTitle = useSelector((state: ReduxState) => state.app.title);
+  const backAction = useSelector((state: ReduxState) => state.app.backAction);
+  const location = useLocation();
 
-            <Switch>
-              <Route exact path="/" component={HomeScreen} />
-              <Route exact path="/loader" component={Loader} />
-            </Switch>
-          </SafeAreaView>
-        </PaperProvider>
-      </BackButton>
-    </NativeRouter>
+  const backBtnHandler = useCallback(() => {
+    if (location.pathname === '/') {
+      BackHandler.exitApp();
+    } else {
+      backAction?.();
+    }
+
+    return true;
+  }, [backAction, location]);
+
+  useEffect(() => {
+    const backBtnEvent = BackHandler.addEventListener('hardwareBackPress', backBtnHandler);
+
+    return () => {
+      backBtnEvent.remove();
+    };
+  }, [backBtnHandler]);
+
+  return (
+    <PaperProvider theme={theme}>
+      <SafeAreaView>
+        <Appbar.Header>
+          {backAction ? (
+            <Appbar.BackAction onPress={backAction} />
+          ) : null}
+          <Appbar.Content title="Cloud Clip" subtitle={appTitle} />
+        </Appbar.Header>
+
+        <Switch>
+          <Route exact path="/" component={HomeScreen} />
+          <Route exact path="/server" component={ServerScreen} />
+        </Switch>
+      </SafeAreaView>
+    </PaperProvider>
   );
 };
 
-export default App;
+export default () => {
+  return (
+    <ReduxProvider store={store}>
+      <NativeRouter>
+        <BackButton>
+          <App />
+        </BackButton>
+      </NativeRouter>
+    </ReduxProvider>
+  );
+};

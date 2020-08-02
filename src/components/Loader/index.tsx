@@ -15,16 +15,33 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { PropsWithChildren } from 'react';
-import { Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Colors } from 'react-native-paper';
 
-interface LoaderProps { }
+interface LoaderProps {
+  text?: string;
+}
 
-const Loader = (_props: PropsWithChildren<LoaderProps>) => {
+const Loader = (props: PropsWithChildren<LoaderProps>) => {
   return (
-    <View>
-      <Text>Hi from Loader!</Text>
+    <View style={[styles.container]}>
+      <ActivityIndicator animating={true} color={Colors.blue800} size="large" />
+      {props.text ? (
+        <Text style={styles.text}>{props.text}</Text>
+      ) : null}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    height: Dimensions.get('window').height - 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    marginTop: 8,
+  },
+});
 
 export default Loader;

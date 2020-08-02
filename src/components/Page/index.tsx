@@ -14,14 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import React, { PropsWithChildren } from 'react';
+import { Dimensions, ScrollView, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 
-// eslint-disable-next-line no-unused-vars
-import moment from 'moment';
-// eslint-disable-next-line no-unused-vars
-import momentTZ from 'moment-timezone';
+interface PageProps {
+  style?: StyleProp<ViewStyle> | null | undefined;
+}
 
-import { AppRegistry } from 'react-native';
-import App from './src/App';
-import { name as appName } from './app.json';
+const styles = StyleSheet.create({
+  container: {
+    height: Dimensions.get('window').height - 80,
+  },
+});
 
-AppRegistry.registerComponent(appName, () => App);
+const Page = (props: PropsWithChildren<PageProps>) => {
+  return (
+    <ScrollView style={[styles.container, props.style]}>
+      {props.children}
+    </ScrollView>
+  );
+};
+
+export default Page;
