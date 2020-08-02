@@ -14,12 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-module.exports = {
-  root: true,
-  extends: '@react-native-community',
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  rules: {
-    'prettier/prettier': "off",
-  },
+import React, { PropsWithChildren } from 'react';
+import { ScrollView } from 'react-native';
+
+interface HomeScreenProps { }
+
+const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
+  return (
+    <ScrollView />
+  );
 };
+
+export default HomeScreen;
