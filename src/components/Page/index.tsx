@@ -16,9 +16,10 @@
 
 import React, { PropsWithChildren } from 'react';
 import { Dimensions, ScrollView, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { CanBeNil } from '../../models';
 
 interface PageProps {
-  style?: StyleProp<ViewStyle> | null | undefined;
+  style?: CanBeNil<StyleProp<ViewStyle>>;
 }
 
 const styles = StyleSheet.create({

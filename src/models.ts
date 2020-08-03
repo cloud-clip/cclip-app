@@ -22,15 +22,41 @@ import { Moment } from 'moment';
 export type BackAction = () => void;
 
 /**
+ * A type, that can be (null) or (undefined).
+ */
+export type CanBeNil<T> = T | null | undefined;
+
+/**
  * A clip.
  */
 export interface Clip {
+  /**
+   * Creation time
+   */
   creation_time: Moment;
+  /**
+   * ID
+   */
   id: string;
+  /**
+   * MIME type of content
+   */
   mime: string;
+  /**
+   * Modification time
+   */
   modification_time: Moment;
+  /**
+   * The display name.
+   */
   name: string;
+  /**
+   * The size, in bytes.
+   */
   size: number;
+  /**
+   * The underlying server.
+   */
   server: ClipServer;
 }
 
@@ -49,7 +75,7 @@ export interface ClipServer {
   /**
    * The password to use.
    */
-  password?: string | null | undefined;
+  password?: CanBeNil<string>;
   /**
    * Calls the API.
    *
@@ -59,4 +85,18 @@ export interface ClipServer {
    * @returns {Promise<Response>} The promise with the response.
    */
   request: (path: string, init?: RequestInit) => Promise<Response>;
+}
+
+/**
+ * A FAB button.
+ */
+export interface FabButton {
+  /**
+   * The name of the icon.
+   */
+  icon: string;
+  /**
+   * The action to invoke if the button is pressed.
+   */
+  onPress: () => void;
 }

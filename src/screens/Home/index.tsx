@@ -14,23 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import Enumerable from 'node-enumerable';
 import Loader from '../../components/Loader';
 import Page from '../../components/Page';
 import React, { PropsWithChildren, useCallback, useEffect } from 'react';
 import { useHistory } from 'react-router-native';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Colors, List } from 'react-native-paper';
 import { useSelector } from 'react-redux';
-import { reloadServers, setAppTitle, setBackAction } from '../../store/actions';
+import { reloadServers, setAppTitle, setBackAction, setFabButton } from '../../store/actions';
 import { ClipServer } from '../../models';
 import { ReduxState } from '../../store';
 
 interface HomeScreenProps { }
 
+const styles = StyleSheet.create({
+  container: {
+  },
+
+});
+
 const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
   const history = useHistory();
   const isLoading = useSelector((state: ReduxState) => state.app.isLoadingServers);
   const servers = useSelector((state: ReduxState) => state.app.servers);
+
+  const addServer = useCallback(() => {
+    console.log('Home.addServer');
+  }, []);
 
   const openServer = useCallback((server: ClipServer) => {
     history.push({
@@ -40,6 +51,17 @@ const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
       },
     });
   }, [history]);
+
+  useEffect(() => {
+    if (isLoading || !servers) {
+      setFabButton(null);
+    } else {
+      setFabButton({
+        icon: 'plus',
+        onPress: addServer,
+      });
+    }
+  }, [addServer, servers, isLoading]);
 
   useEffect(() => {
     setAppTitle('Home');
@@ -55,17 +77,31 @@ const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
     );
   } else {
     if (servers?.length) {
-      content = (
-        <View>
-          {servers.map((server, index) => {
-            return <List.Item
+      const serverListItems = servers.map((server, index) => {
+        return {
+          element: (
+            <List.Item
               key={`b60e1d5b-69d0-47e6-8317-c37d234e2874-${server.baseUrl}-${index}`}
               onPress={() => openServer(server)}
               title={server.name}
               description={server.baseUrl}
               left={props => <List.Icon {...props} icon="dns" color={Colors.blue500} />}
-            />;
-          })}
+            />
+          ),
+          item: server,
+          index,
+        };
+      });
+
+      content = (
+        <View>
+          {Enumerable.from(serverListItems).orderBy(x => {
+            return String(x.item.name).toLowerCase().trim();
+          }).thenBy(x => {
+            return String(x.item.baseUrl).toLowerCase().trim();
+          }).select(x => {
+            return x.element;
+          }).toArray()}
         </View>
       );
     } else {
@@ -74,7 +110,7 @@ const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
   }
 
   return (
-    <Page>
+    <Page style={[styles.container]}>
       {content}
     </Page>
   );

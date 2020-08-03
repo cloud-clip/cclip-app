@@ -16,11 +16,12 @@
 
 import deepmerge from 'deepmerge';
 import Store from '..';
-import { BackAction, ClipServer } from '../../models';
+import { BackAction, CanBeNil, ClipServer, FabButton } from '../../models';
 import { Platform } from 'react-native';
 import { Dispatch } from 'redux';
 
 export const APP_SET_BACK_ACTION = 'APP_SET_BACK_ACTION';
+export const APP_SET_FAB_BUTTON = 'APP_SET_FAB_BUTTON';
 export const APP_RELOAD_SERVER_FINISHED = 'APP_RELOAD_SERVER_FINISHED';
 export const APP_RELOAD_SERVER_STARTED = 'APP_RELOAD_SERVER_STARTED';
 export const APP_SET_TITLE = 'APP_SET_TITLE';
@@ -34,25 +35,29 @@ export function reloadServers() {
     dispatch({ type: APP_RELOAD_SERVER_STARTED });
 
     setTimeout(() => {
-      const servers: ClipServer[] = [{
-        baseUrl: `http://${Platform.select({ android: '10.0.2.2', default: '127.0.0.1' })}:50979/`,
-        name: 'Local dev server',
-        password: 'test',
-        request: function (p, i?) {
-          const init: RequestInit = {
-            headers: {},
-          };
-          if (this.password) {
-            // @ts-ignore
-            init.headers!.Authorization = 'Bearer ' + this.password;
-          }
+      const servers: ClipServer[] = [];
 
-          return fetch(
-            this.baseUrl + p,
-            deepmerge(init, i || {})
-          );
-        },
-      }];
+      if (__DEV__) {
+        servers.unshift({
+          baseUrl: `http://${Platform.select({ android: '10.0.2.2', default: '127.0.0.1' })}:50979/`,
+          name: 'Local dev server',
+          password: 'test',
+          request: function (p, i?) {
+            const init: RequestInit = {
+              headers: {},
+            };
+            if (this.password) {
+              // @ts-ignore
+              init.headers!.Authorization = 'Bearer ' + this.password;
+            }
+
+            return fetch(
+              this.baseUrl + p,
+              deepmerge(init, i || {})
+            );
+          },
+        });
+      }
 
       dispatch({ type: APP_RELOAD_SERVER_FINISHED, servers });
     }, 1000);
@@ -71,8 +76,17 @@ export function setAppTitle(title: string) {
 /**
  * Sets the action for global back button.
  *
- * @param {BackAction|null|undefined} action The new action.
+ * @param {CanBeNil<BackAction>} action The new action.
  */
-export function setBackAction(action: BackAction | null | undefined) {
+export function setBackAction(action: CanBeNil<BackAction>) {
   Store.dispatch({ type: APP_SET_BACK_ACTION, action });
+}
+
+/**
+ * Sets the global FAB button.
+ *
+ * @param {CanBeNil<FabButton>} button The new button.
+ */
+export function setFabButton(button: CanBeNil<FabButton>) {
+  Store.dispatch({ type: APP_SET_FAB_BUTTON, button });
 }

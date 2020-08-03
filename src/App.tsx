@@ -18,26 +18,35 @@ import HomeScreen from './screens/Home';
 import React, { PropsWithChildren, useCallback, useEffect } from 'react';
 import ServerScreen from './screens/Server';
 import store, { ReduxState } from './store';
-import { BackHandler, SafeAreaView } from 'react-native';
-import { Appbar, DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
+import { BackHandler, SafeAreaView, StyleSheet } from 'react-native';
+import { Appbar, Colors, DefaultTheme, FAB, Provider as PaperProvider } from 'react-native-paper';
 import { Provider as ReduxProvider, useSelector } from 'react-redux';
 import { BackButton, NativeRouter, Switch, Route, useLocation } from 'react-router-native';
 
 interface AppProps {
 }
 
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+  },
+});
+
 const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: 'black',
-    accent: 'yellow',
+    primary: Colors.black,
+    accent: Colors.red600,
   },
 };
 
 const App = (_props: PropsWithChildren<AppProps>) => {
   const appTitle = useSelector((state: ReduxState) => state.app.title);
   const backAction = useSelector((state: ReduxState) => state.app.backAction);
+  const fabButton = useSelector((state: ReduxState) => state.app.fabButton);
   const location = useLocation();
 
   const backBtnHandler = useCallback(() => {
@@ -58,6 +67,17 @@ const App = (_props: PropsWithChildren<AppProps>) => {
     };
   }, [backBtnHandler]);
 
+  let fabBtnContent: any;
+  if (fabButton) {
+    fabBtnContent = (
+      <FAB
+        style={styles.fab}
+        icon={fabButton.icon}
+        onPress={fabButton.onPress}
+      />
+    );
+  }
+
   return (
     <PaperProvider theme={theme}>
       <SafeAreaView>
@@ -72,6 +92,8 @@ const App = (_props: PropsWithChildren<AppProps>) => {
           <Route exact path="/" component={HomeScreen} />
           <Route exact path="/server" component={ServerScreen} />
         </Switch>
+
+        {fabBtnContent}
       </SafeAreaView>
     </PaperProvider>
   );
