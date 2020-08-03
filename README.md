@@ -4,7 +4,7 @@
 
 ## Development
 
-First install [Node.js or later](https://nodejs.org/), if needed.
+First install [Node.js 10 or later](https://nodejs.org/), if needed.
 
 Then, keep sure to have all modules installed:
 
