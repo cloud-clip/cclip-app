@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import AsyncStorage from '@react-native-community/async-storage';
 import deepmerge from 'deepmerge';
 import Store from '..';
 import { BackAction, CanBeNil, ClipServer, FabButton } from '../../models';
@@ -26,6 +27,8 @@ export const APP_RELOAD_SERVER_FINISHED = 'APP_RELOAD_SERVER_FINISHED';
 export const APP_RELOAD_SERVER_STARTED = 'APP_RELOAD_SERVER_STARTED';
 export const APP_SET_TITLE = 'APP_SET_TITLE';
 
+const STORAGE_KEY_SERVER = 'ClipServers';
+
 /**
  * Reloads the global server list.
  */
@@ -34,33 +37,48 @@ export function reloadServers() {
   Store.dispatch((dispatch: Dispatch) => {
     dispatch({ type: APP_RELOAD_SERVER_STARTED });
 
-    setTimeout(() => {
-      const servers: ClipServer[] = [];
+    const servers: ClipServer[] = [];
 
-      if (__DEV__) {
-        servers.unshift({
-          baseUrl: `http://${Platform.select({ android: '10.0.2.2', default: '127.0.0.1' })}:50979/`,
-          name: 'Local dev server',
-          password: 'test',
-          request: function (p, i?) {
-            const init: RequestInit = {
-              headers: {},
-            };
-            if (this.password) {
-              // @ts-ignore
-              init.headers!.Authorization = 'Bearer ' + this.password;
+    AsyncStorage.getItem(STORAGE_KEY_SERVER)
+      .then(value => {
+        try {
+          if (value) {
+            const storedServers = JSON.parse(value);
+            if (Array.isArray(storedServers)) {
+              servers.push(
+                ...storedServers.filter(server => typeof server === 'object')
+              );
             }
+          }
+        } catch (e) {
+          console.log('[ERROR] reloadServers(1)', e);
+        }
+      })
+      .finally(() => {
+        if (__DEV__) {
+          servers.unshift({
+            baseUrl: `http://${Platform.select({ android: '10.0.2.2', default: '127.0.0.1' })}:50979/`,
+            name: 'Local dev server',
+            password: 'test',
+            request: function (p, i?) {
+              const init: RequestInit = {
+                headers: {},
+              };
+              if (this.password) {
+                // @ts-ignore
+                init.headers!.Authorization = 'Bearer ' + this.password;
+              }
 
-            return fetch(
-              this.baseUrl + p,
-              deepmerge(init, i || {})
-            );
-          },
-        });
-      }
+              return fetch(
+                this.baseUrl + p,
+                deepmerge(init, i || {})
+              );
+            },
+          });
+        }
 
-      dispatch({ type: APP_RELOAD_SERVER_FINISHED, servers });
-    }, 1000);
+        dispatch({ type: APP_RELOAD_SERVER_FINISHED, servers });
+      });
   });
 }
 
