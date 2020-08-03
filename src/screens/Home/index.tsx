@@ -44,7 +44,7 @@ const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
   }, []);
 
   const openServer = useCallback((server: ClipServer) => {
-    history.push({
+    history.replace({
       pathname: '/server',
       state: {
         server,

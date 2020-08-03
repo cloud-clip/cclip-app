@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { Moment } from 'moment';
+import { FetchBlobResponse } from 'rn-fetch-blob';
 
 /**
  * A back button action.
@@ -34,6 +35,12 @@ export interface Clip {
    * Creation time
    */
   creation_time: Moment;
+  /**
+   * Downloads the clip.
+   *
+   * @returns {Promise<FetchBlobResponse>} The promise with the response.
+   */
+  download: () => Promise<FetchBlobResponse>;
   /**
    * ID
    */

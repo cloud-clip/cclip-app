@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import CheckPermissionsScreen from './screens/CheckPermissions';
 import HomeScreen from './screens/Home';
 import React, { PropsWithChildren, useCallback, useEffect } from 'react';
 import ServerScreen from './screens/Server';
@@ -89,7 +90,8 @@ const App = (_props: PropsWithChildren<AppProps>) => {
         </Appbar.Header>
 
         <Switch>
-          <Route exact path="/" component={HomeScreen} />
+          <Route exact path="/" component={CheckPermissionsScreen} />
+          <Route exact path="/home" component={HomeScreen} />
           <Route exact path="/server" component={ServerScreen} />
         </Switch>
 

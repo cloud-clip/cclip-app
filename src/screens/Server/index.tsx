@@ -15,12 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Enumerable from 'node-enumerable';
+import FetchBlob from 'rn-fetch-blob';
 import Filesize from 'filesize';
 import Loader from '../../components/Loader';
+import Mime from 'mime';
 import moment from 'moment';
 import Page from '../../components/Page';
 import React, { PropsWithChildren, useCallback, useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { Colors, List } from 'react-native-paper';
 import { useHistory } from 'react-router-native';
 import { Clip, ClipServer } from '../../models';
@@ -50,6 +52,34 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
     console.log('Server.addClip');
   }, []);
 
+  const getClipIcon = useCallback((clip: Clip) => {
+    if (clip.mime.startsWith('text/')) {
+      return 'text';
+    }
+    if (clip.mime.startsWith('image/')) {
+      return 'image';
+    }
+
+    return 'file';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clips]);
+
+  const openClip = useCallback((path: string, mime?: string) => {
+    const action = Platform.select({
+      android: () => {
+        return FetchBlob.android.actionViewIntent(path, mime || 'application/octet-stream');
+      },
+      ios: async () => {
+        return FetchBlob.ios.openDocument(path);
+      },
+
+      default: async () => { },
+    });
+
+    return action();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clips]);
+
   const reloadClips = useCallback(() => {
     setIsLoading(true);
 
@@ -60,11 +90,35 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
         Enumerable.from(clipsFromAPI).where(clip => {
           return !!clip;
         }).select(clip => {
+          let appendExt: string | undefined;
+          if (clip.mime) {
+            const extension = Mime.getExtension(clip.mime.toLowerCase().trim());
+            if (extension) {
+              appendExt = extension;
+            }
+          }
+
           return {
-            creation_time: moment.utc(clip.ctime * 1000).local(),
-            id: clip.id,
-            mime: clip.mime,
-            modification_time: moment.utc(clip.mtime * 1000).local(),
+            creation_time: moment.utc(Number('' + clip.ctime) * 1000).local(),
+            download: function () {
+              const url = this.server.baseUrl +
+                clip.resource.substr(1);
+
+              const headers: any = {};
+              if (this.server.password) {
+                headers.Authorization = `Bearer ${this.server.password}`;
+              }
+
+              return FetchBlob.config({
+                fileCache: true,
+                followRedirect: false,
+                appendExt,
+                overwrite: true,
+              }).fetch('GET', url, headers);
+            },
+            id: String(clip.id || ''),
+            mime: String(clip.mime || '').toLowerCase().trim(),
+            modification_time: moment.utc(Number('' + clip.mtime) * 1000).local(),
             name: String(clip.name),
             server,
             size: Number('' + clip.size),
@@ -93,7 +147,7 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
   }, [addClip, clips, isLoading]);
 
   useEffect(() => {
-    setBackAction(() => history.push('/'));
+    setBackAction(() => history.replace('/home'));
   }, [history]);
 
   useEffect(() => {
@@ -115,11 +169,30 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
       content = (
         <View>
           {clips.map(clip => {
+            let isDownloading = false;
+
             return <List.Item
               key={`8241aea1-eba8-422d-9b53-5af50fab699e-${server.baseUrl}-${clip.id}`}
               title={clip.name}
               description={`${Filesize(clip.size)}; ${clip.modification_time.format('YYYY-MM-DD HH:mm:ss')}`}
-              left={props => <List.Icon {...props} icon="file" color={Colors.green600} />}
+              left={props => <List.Icon {...props} icon={getClipIcon(clip)} color={Colors.green600} />}
+              onPress={() => {
+                if (isDownloading) {
+                  return;
+                }
+
+                isDownloading = true;
+                clip.download()
+                  .then(resp => {
+                    return openClip(resp.path(), clip.mime || undefined);
+                  })
+                  .catch(err => {
+                    console.log('Clip download error', err);
+                  })
+                  .finally(() => {
+                    isDownloading = false;
+                  });
+              }}
             />;
           })}
         </View>
