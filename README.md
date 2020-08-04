@@ -42,3 +42,15 @@ Then execute the following command from root directory:
 ```bash
 npx react-native run-ios
 ```
+
+#### Environment variables
+
+The app uses [react-native-config](https://github.com/luggit/react-native-config), which makes it possible to add custom build configuration with the help of an `.env` file, which is stored in the root directory of the project.
+
+To use such a file, first set the environment variable `ENVFILE` to `.env` and then start the app as described above.
+
+The following variables are supported:
+
+| Name      | Description |  Example |
+|-----------|-------------|----------|
+| `SERVERS` | List of hardcoded servers, separated by `;` and stored in format `<NAME>|<BASE-URL>|<PASSWORD>` | `SERVERS=Raspberry #1|http://192.168.0.1:50979/|myPassword1;Raspberry #2|http://192.168.0.22:50979/|myPassword222` |

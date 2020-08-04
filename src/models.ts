@@ -84,15 +84,20 @@ export interface ClipServer {
    */
   password?: CanBeNil<string>;
   /**
-   * Calls the API.
-   *
-   * @param {string} path The relative path WITHOUT leading /
-   * @param {RequestInit} [init] Initial options for the request.
-   *
-   * @returns {Promise<Response>} The promise with the response.
+   * The request function.
    */
-  request: (path: string, init?: RequestInit) => Promise<Response>;
+  request: ClipServerRequestFunc;
 }
+
+/**
+ * A function, that does a request to a Cloud Clip server.
+ *
+ * @param {string} path The relative path WITHOUT leading /
+ * @param {RequestInit} [init] Initial options for the request.
+ *
+ * @returns {Promise<Response>} The promise with the response.
+ */
+export type ClipServerRequestFunc = (path: string, init?: RequestInit) => Promise<Response>;
 
 /**
  * A FAB button.

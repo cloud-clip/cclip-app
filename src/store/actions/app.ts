@@ -15,9 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import AsyncStorage from '@react-native-community/async-storage';
+import Config from 'react-native-config';
 import deepmerge from 'deepmerge';
+import Enumerable from 'node-enumerable';
 import Store from '..';
-import { ClipServer } from '../../models';
+import { CanBeNil, ClipServer, ClipServerRequestFunc } from '../../models';
 import { Platform } from 'react-native';
 import { Dispatch } from 'redux';
 
@@ -26,6 +28,23 @@ export const APP_RELOAD_SERVER_STARTED = 'APP_RELOAD_SERVER_STARTED';
 export const APP_SET_GLOBAL_CONTENT = 'APP_SET_GLOBAL_CONTENT';
 
 const STORAGE_KEY_SERVER = 'ClipServers';
+
+function createServerRequestFunction(baseUrl: string, password: CanBeNil<string>): ClipServerRequestFunc {
+  return (p, i?) => {
+    const init: RequestInit = {
+      headers: {},
+    };
+    if (password) {
+      // @ts-ignore
+      init.headers!.Authorization = 'Bearer ' + this.password;
+    }
+
+    return fetch(
+      baseUrl + p,
+      deepmerge(init, i || {})
+    );
+  };
+}
 
 /**
  * Reloads the global server list.
@@ -36,6 +55,63 @@ export function reloadServers() {
     dispatch({ type: APP_RELOAD_SERVER_STARTED });
 
     const servers: ClipServer[] = [];
+
+    if (__DEV__) {
+      // add an entry for a local development server
+
+      const name = 'Local dev server';
+      const baseUrl = `http://${Platform.select({ android: '10.0.2.2', default: '127.0.0.1' })}:50979/`;
+      const password = 'test';
+
+      servers.push({
+        baseUrl,
+        name,
+        password,
+        request: createServerRequestFunction(baseUrl, password),
+      });
+    }
+
+    // hardcoded servers?
+    if (typeof Config.SERVERS === 'string') {
+      Enumerable.from(Config.SERVERS.split(';'))
+        .select(item => item.trim())
+        .where(item => item !== '')
+        .select(item => {
+          let [name, baseUrl, password] = item.split('|');
+
+          name = String(name).trim();
+
+          baseUrl = String(baseUrl).trim();
+          if (!baseUrl.endsWith('/')) {
+            baseUrl += '/';
+          }
+
+          if (!password) {
+            password = '';
+          }
+          password = String(password).trim();
+          if (!password) {
+            password = undefined as any;
+          }
+
+          return {
+            baseUrl,
+            name,
+            password,
+          };
+        })
+        .distinctBy(x => x.baseUrl.toLowerCase())
+        .forEach(x => {
+          console.log('x', x);
+
+          servers.push({
+            baseUrl: x.baseUrl,
+            name: x.name,
+            password: x.password,
+            request: createServerRequestFunction(x.baseUrl, x.password),
+          });
+        });
+    }
 
     AsyncStorage.getItem(STORAGE_KEY_SERVER)
       .then(value => {
@@ -53,28 +129,6 @@ export function reloadServers() {
         }
       })
       .finally(() => {
-        if (__DEV__) {
-          servers.unshift({
-            baseUrl: `http://${Platform.select({ android: '10.0.2.2', default: '127.0.0.1' })}:50979/`,
-            name: 'Local dev server',
-            password: 'test',
-            request: function (p, i?) {
-              const init: RequestInit = {
-                headers: {},
-              };
-              if (this.password) {
-                // @ts-ignore
-                init.headers!.Authorization = 'Bearer ' + this.password;
-              }
-
-              return fetch(
-                this.baseUrl + p,
-                deepmerge(init, i || {})
-              );
-            },
-          });
-        }
-
         dispatch({ type: APP_RELOAD_SERVER_FINISHED, servers });
       });
   });
