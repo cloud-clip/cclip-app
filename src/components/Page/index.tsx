@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { PropsWithChildren, useState } from 'react';
-import { Dimensions, ScrollView, StyleProp, StyleSheet, View, ViewStyle, Text } from 'react-native';
+import { Dimensions, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Appbar, FAB } from 'react-native-paper';
 import { BackAction, CanBeNil, FabButton } from '../../models';
 

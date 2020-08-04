@@ -15,38 +15,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { PropsWithChildren } from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
-import { Colors, Dialog, List } from 'react-native-paper';
+import { StyleProp, Text, ViewStyle } from 'react-native';
+import { Dialog } from 'react-native-paper';
 import { CanBeNil } from '../../../models';
 
-interface AddClipDialogProps {
+interface AddClipFromClipboardDialogProps {
   onDismiss: () => any;
-  onSelected: (action: SelectedAddClipAction) => any;
   style?: CanBeNil<StyleProp<ViewStyle>>;
   visible: CanBeNil<boolean>;
 }
 
-export enum SelectedAddClipAction {
-  FromClipboard
-}
-
-const AddClipDialog = (props: PropsWithChildren<AddClipDialogProps>) => {
+const AddClipFromClipboardDialog = (props: PropsWithChildren<AddClipFromClipboardDialogProps>) => {
   return (
     <Dialog
       style={props.style}
       visible={!!props.visible}
       onDismiss={props.onDismiss}
     >
-      <Dialog.Title>Add clip</Dialog.Title>
-      <Dialog.Content>
-        <List.Item
-          onPress={() => props.onSelected(SelectedAddClipAction.FromClipboard)}
-          title="From clipboard"
-          left={itemProps => <List.Icon {...itemProps} icon="clipboard" color={Colors.pink500} />}
-        />
-      </Dialog.Content>
+      <Dialog.Title>Add clip from clipboard</Dialog.Title>
+      <Dialog.Content><Text>Lorem ipsum</Text></Dialog.Content>
     </Dialog>
   );
 };
 
-export default AddClipDialog;
+export default AddClipFromClipboardDialog;

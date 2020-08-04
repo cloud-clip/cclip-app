@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import AddClipDialog from './AddClipDialog';
+import AddClipDialog, { SelectedAddClipAction } from './AddClipDialog';
+import AddClipFromClipboardDialog from './AddClipFromClipboardDialog';
 import Enumerable from 'node-enumerable';
 import FetchBlob from 'rn-fetch-blob';
 import Filesize from 'filesize';
@@ -46,6 +47,7 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(true);
   const [isAddClipDialogVisible, setIsAddClipDialogVisible] = useState(false);
+  const [isAddClipFromClipboardDialogVisible, setIsAddClipFromClipboardDialogVisible] = useState(false);
 
   const server: ClipServer = (history.location.state as any).server;
 
@@ -66,6 +68,19 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
   }, [clips]);
 
   const onDismissAddClipDialog = useCallback(() => {
+    setIsAddClipDialogVisible(false);
+  }, []);
+
+  const onDismissAddClipFromClipboardDialog = useCallback(() => {
+    setIsAddClipFromClipboardDialogVisible(false);
+  }, []);
+
+  const onAddClipActionSelected = useCallback((action: SelectedAddClipAction) => {
+    switch (action) {
+      case SelectedAddClipAction.FromClipboard:
+        break;
+    }
+
     setIsAddClipDialogVisible(false);
   }, []);
 
@@ -154,8 +169,7 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
 
   useEffect(() => {
     reloadClips();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reloadClips]);
 
   let content: any;
   let fabButtons: CanBeNil<FabButton[]>;
@@ -206,18 +220,36 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
     }];
   }
 
-  const addDialog = (
-    <AddClipDialog
-      visible={isAddClipDialogVisible}
-      onDismiss={onDismissAddClipDialog}
-    />
-  );
+  let dialogContent: any;
+  {
+    const addDialog = (
+      <AddClipDialog
+        visible={isAddClipDialogVisible}
+        onDismiss={onDismissAddClipDialog}
+        onSelected={onAddClipActionSelected}
+      />
+    );
+
+    const addFromClipboardDialog = (
+      <AddClipFromClipboardDialog
+        visible={isAddClipFromClipboardDialogVisible}
+        onDismiss={onDismissAddClipFromClipboardDialog}
+      />
+    );
+
+    dialogContent = (
+      <>
+        {addDialog}
+        {addFromClipboardDialog}
+      </>
+    );
+  }
 
   return (
     <Page
       backAction={() => history.replace('/home')}
       fabButtons={fabButtons}
-      dialogContent={addDialog}
+      dialogContent={dialogContent}
       title={`Clips of '${server.name}'`}
     >
       {content}
