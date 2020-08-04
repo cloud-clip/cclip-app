@@ -25,7 +25,7 @@ export type BackAction = () => void;
 /**
  * A type, that can be (null) or (undefined).
  */
-export type CanBeNil<T> = T | null | undefined;
+export type CanBeNil<T extends any = any> = T | null | undefined;
 
 /**
  * A clip.

@@ -17,15 +17,13 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import deepmerge from 'deepmerge';
 import Store from '..';
-import { BackAction, CanBeNil, ClipServer, FabButton } from '../../models';
+import { ClipServer } from '../../models';
 import { Platform } from 'react-native';
 import { Dispatch } from 'redux';
 
-export const APP_SET_BACK_ACTION = 'APP_SET_BACK_ACTION';
-export const APP_SET_FAB_BUTTON = 'APP_SET_FAB_BUTTON';
 export const APP_RELOAD_SERVER_FINISHED = 'APP_RELOAD_SERVER_FINISHED';
 export const APP_RELOAD_SERVER_STARTED = 'APP_RELOAD_SERVER_STARTED';
-export const APP_SET_TITLE = 'APP_SET_TITLE';
+export const APP_SET_GLOBAL_CONTENT = 'APP_SET_GLOBAL_CONTENT';
 
 const STORAGE_KEY_SERVER = 'ClipServers';
 
@@ -83,28 +81,10 @@ export function reloadServers() {
 }
 
 /**
- * Sets the app / page title.
+ * Sets the global FAB button(s).
  *
- * @param {string} title The new title.
+ * @param {FabButton[]} buttons The new button(s).
  */
-export function setAppTitle(title: string) {
-  Store.dispatch({ type: APP_SET_TITLE, title });
-}
-
-/**
- * Sets the action for global back button.
- *
- * @param {CanBeNil<BackAction>} action The new action.
- */
-export function setBackAction(action: CanBeNil<BackAction>) {
-  Store.dispatch({ type: APP_SET_BACK_ACTION, action });
-}
-
-/**
- * Sets the global FAB button.
- *
- * @param {CanBeNil<FabButton>} button The new button.
- */
-export function setFabButton(button: CanBeNil<FabButton>) {
-  Store.dispatch({ type: APP_SET_FAB_BUTTON, button });
+export function setGlobalContent(content: any) {
+  Store.dispatch({ type: APP_SET_GLOBAL_CONTENT, content });
 }

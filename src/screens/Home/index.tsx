@@ -19,20 +19,14 @@ import Loader from '../../components/Loader';
 import Page from '../../components/Page';
 import React, { PropsWithChildren, useCallback, useEffect } from 'react';
 import { useHistory } from 'react-router-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Text, View } from 'react-native';
 import { Colors, List } from 'react-native-paper';
 import { useSelector } from 'react-redux';
-import { reloadServers, setAppTitle, setBackAction, setFabButton } from '../../store/actions';
-import { ClipServer } from '../../models';
+import { reloadServers } from '../../store/actions';
+import { ClipServer, FabButton, CanBeNil } from '../../models';
 import { ReduxState } from '../../store';
 
 interface HomeScreenProps { }
-
-const styles = StyleSheet.create({
-  container: {
-  },
-
-});
 
 const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
   const history = useHistory();
@@ -53,24 +47,21 @@ const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
   }, [history]);
 
   useEffect(() => {
-    if (isLoading || !servers) {
-      setFabButton(null);
-    } else {
-      setFabButton({
-        icon: 'plus',
-        onPress: addServer,
-      });
-    }
-  }, [addServer, servers, isLoading]);
+    const backBtnHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      BackHandler.exitApp();
 
-  useEffect(() => {
-    setAppTitle('Home');
-    setBackAction(null);
+      return true;
+    });
 
     reloadServers();
+
+    return () => {
+      backBtnHandler.remove();
+    };
   }, []);
 
   let content: any;
+  let fabButtons: CanBeNil<FabButton[]>;
   if (isLoading || !servers) {
     content = (
       <Loader text="Loading servers ...." />
@@ -107,10 +98,18 @@ const HomeScreen = (_props: PropsWithChildren<HomeScreenProps>) => {
     } else {
       content = <Text>No servers found</Text>;
     }
+
+    fabButtons = [{
+      icon: 'plus',
+      onPress: addServer,
+    }];
   }
 
   return (
-    <Page style={[styles.container]}>
+    <Page
+      fabButtons={fabButtons}
+      title="Servers"
+    >
       {content}
     </Page>
   );

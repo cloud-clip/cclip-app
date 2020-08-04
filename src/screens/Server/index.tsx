@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import AddClipDialog from './AddClipDialog';
 import Enumerable from 'node-enumerable';
 import FetchBlob from 'rn-fetch-blob';
 import Filesize from 'filesize';
@@ -22,11 +23,10 @@ import Mime from 'mime';
 import moment from 'moment';
 import Page from '../../components/Page';
 import React, { PropsWithChildren, useCallback, useEffect, useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { BackHandler, Platform, Text, View } from 'react-native';
 import { Colors, List } from 'react-native-paper';
 import { useHistory } from 'react-router-native';
-import { Clip, ClipServer } from '../../models';
-import { setAppTitle, setBackAction, setFabButton } from '../../store/actions';
+import { Clip, ClipServer, FabButton, CanBeNil } from '../../models';
 
 interface ClipResultItem {
   ctime: number;
@@ -45,11 +45,12 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
   const [clips, setClips] = useState<Clip[]>([]);
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddClipDialogVisible, setIsAddClipDialogVisible] = useState(false);
 
   const server: ClipServer = (history.location.state as any).server;
 
   const addClip = useCallback(() => {
-    console.log('Server.addClip');
+    setIsAddClipDialogVisible(true);
   }, []);
 
   const getClipIcon = useCallback((clip: Clip) => {
@@ -63,6 +64,10 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
     return 'file';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clips]);
+
+  const onDismissAddClipDialog = useCallback(() => {
+    setIsAddClipDialogVisible(false);
+  }, []);
 
   const openClip = useCallback((path: string, mime?: string) => {
     const action = Platform.select({
@@ -136,23 +141,16 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
   }, [server]);
 
   useEffect(() => {
-    if (isLoading || !clips) {
-      setFabButton(null);
-    } else {
-      setFabButton({
-        icon: 'plus',
-        onPress: addClip,
-      });
-    }
-  }, [addClip, clips, isLoading]);
+    const backBtnHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      history.replace('/home');
 
-  useEffect(() => {
-    setBackAction(() => history.replace('/home'));
+      return true;
+    });
+
+    return () => {
+      backBtnHandler.remove();
+    };
   }, [history]);
-
-  useEffect(() => {
-    setAppTitle(`Clips of '${server.name}'`);
-  }, [server]);
 
   useEffect(() => {
     reloadClips();
@@ -160,6 +158,7 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
   }, []);
 
   let content: any;
+  let fabButtons: CanBeNil<FabButton[]>;
   if (isLoading) {
     content = (
       <Loader text={`Loading clips from '${server.baseUrl}'....`} />
@@ -200,10 +199,27 @@ const ServerScreen = (_props: PropsWithChildren<ServerScreenProps>) => {
     } else {
       content = <Text>No clips found</Text>;
     }
+
+    fabButtons = [{
+      icon: 'plus',
+      onPress: addClip,
+    }];
   }
 
+  const addDialog = (
+    <AddClipDialog
+      visible={isAddClipDialogVisible}
+      onDismiss={onDismissAddClipDialog}
+    />
+  );
+
   return (
-    <Page>
+    <Page
+      backAction={() => history.replace('/home')}
+      fabButtons={fabButtons}
+      dialogContent={addDialog}
+      title={`Clips of '${server.name}'`}
+    >
       {content}
     </Page>
   );

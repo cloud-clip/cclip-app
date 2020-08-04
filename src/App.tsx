@@ -16,24 +16,16 @@
 
 import CheckPermissionsScreen from './screens/CheckPermissions';
 import HomeScreen from './screens/Home';
-import React, { PropsWithChildren, useCallback, useEffect } from 'react';
+import React, { PropsWithChildren } from 'react';
 import ServerScreen from './screens/Server';
 import store, { ReduxState } from './store';
-import { BackHandler, SafeAreaView, StyleSheet } from 'react-native';
-import { Appbar, Colors, DefaultTheme, FAB, Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaView } from 'react-native';
+import { Colors, DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import { Provider as ReduxProvider, useSelector } from 'react-redux';
-import { BackButton, NativeRouter, Switch, Route, useLocation } from 'react-router-native';
+import { BackButton, NativeRouter, Switch, Route } from 'react-router-native';
 
 interface AppProps {
 }
-
-const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-  },
-});
 
 const theme = {
   ...DefaultTheme,
@@ -45,57 +37,18 @@ const theme = {
 };
 
 const App = (_props: PropsWithChildren<AppProps>) => {
-  const appTitle = useSelector((state: ReduxState) => state.app.title);
-  const backAction = useSelector((state: ReduxState) => state.app.backAction);
-  const fabButton = useSelector((state: ReduxState) => state.app.fabButton);
-  const location = useLocation();
-
-  const backBtnHandler = useCallback(() => {
-    if (location.pathname === '/') {
-      BackHandler.exitApp();
-    } else {
-      backAction?.();
-    }
-
-    return true;
-  }, [backAction, location]);
-
-  useEffect(() => {
-    const backBtnEvent = BackHandler.addEventListener('hardwareBackPress', backBtnHandler);
-
-    return () => {
-      backBtnEvent.remove();
-    };
-  }, [backBtnHandler]);
-
-  let fabBtnContent: any;
-  if (fabButton) {
-    fabBtnContent = (
-      <FAB
-        style={styles.fab}
-        icon={fabButton.icon}
-        onPress={fabButton.onPress}
-      />
-    );
-  }
+  const globalContent = useSelector((state: ReduxState) => state.app.globalContent);
 
   return (
     <PaperProvider theme={theme}>
       <SafeAreaView>
-        <Appbar.Header>
-          {backAction ? (
-            <Appbar.BackAction onPress={backAction} />
-          ) : null}
-          <Appbar.Content title="Cloud Clip" subtitle={appTitle} />
-        </Appbar.Header>
-
         <Switch>
           <Route exact path="/" component={CheckPermissionsScreen} />
           <Route exact path="/home" component={HomeScreen} />
           <Route exact path="/server" component={ServerScreen} />
         </Switch>
 
-        {fabBtnContent}
+        {globalContent}
       </SafeAreaView>
     </PaperProvider>
   );

@@ -16,17 +16,15 @@
 
 import * as actions from '../actions';
 import { Reducer } from 'redux';
-import { BackAction, CanBeNil, ClipServer, FabButton } from '../../models';
+import { CanBeNil, ClipServer } from '../../models';
 
 /**
  * The Redux state for global app things.
  */
 export interface AppReduxState {
-  backAction?: CanBeNil<BackAction>;
-  fabButton?: CanBeNil<FabButton>;
+  globalContent?: CanBeNil;
   isLoadingServers: boolean;
   servers?: CanBeNil<ClipServer[]>;
-  title?: CanBeNil<string>;
 }
 
 const initialState: AppReduxState = {
@@ -48,22 +46,10 @@ const appReducer: Reducer<AppReduxState> = (state = initialState, action) => {
         isLoadingServers: true,
       };
 
-    case actions.APP_SET_BACK_ACTION:
+    case actions.APP_SET_GLOBAL_CONTENT:
       return {
         ...state,
-        backAction: action.action,
-      };
-
-    case actions.APP_SET_FAB_BUTTON:
-      return {
-        ...state,
-        fabButton: action.button,
-      };
-
-    case actions.APP_SET_TITLE:
-      return {
-        ...state,
-        title: action.title,
+        globalContent: action.content,
       };
   }
 
