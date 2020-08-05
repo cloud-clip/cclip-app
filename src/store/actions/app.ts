@@ -36,7 +36,7 @@ function createServerRequestFunction(baseUrl: string, password: CanBeNil<string>
     };
     if (password) {
       // @ts-ignore
-      init.headers!.Authorization = 'Bearer ' + this.password;
+      init.headers!.Authorization = 'Bearer ' + password;
     }
 
     return fetch(
